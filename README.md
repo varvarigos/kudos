@@ -17,8 +17,5 @@
 
 <p align="justify">Σχετικά με την πορεία υλοποίησης, αρχικά ολοκληρώσαμε την βιβλιοθήκη OpenMIC που αποτελεί την βάση για της άλλες δύο εφαρμογές. Στη συνέχεια έγινε η υλοποίηση του συστήματος ασφαλής εκκένωσης και τέλος αναπτύχθηκε το σύστημα διαχείρισης των συσκευών Raspberry Pi. Στις επιμέρους σελίδες υπάρχει αναλυτική περιγραφή για το σχεδιασμό, την εγκατάσταση και χρήση του κάθε συστήματος μαζί με συνοδευτικές φωτογραφίες και διαγράμματα.
 </p>
-
-<p align="justify"> 
- This work is licensed under a [Creative Commons Attribution 4.0 International License]: http://creativecommons.org/licenses/by/4.0/
-
-</p>
+ 
+ This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)
