@@ -27,8 +27,8 @@ class RaspberryAgent:
 
 		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
 		self.context = agent_context.AgentContext(zeromq_params)
-
-		#context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		
+		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
 		#self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 		
 
