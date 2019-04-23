@@ -51,8 +51,11 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 
 	def setup_openmic_controller(self):
 
-		rabbitmq_params = cons.RabbitMQParameters("bee-01.rmq.cloudamqp.com","mtsapzpt", "udyNqp3nCE9LyFYl7-AXt4Hfg747Qctq", virtual_host = "mtsapzpt")
-		context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
+		context = controller_context.ControllerContext(zeromq_params)
+		
+		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
+		#context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 
 		self.instance = controller_instance.ControllerInstance(context)
 		
