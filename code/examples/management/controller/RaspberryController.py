@@ -67,6 +67,7 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.clearTaskButton.clicked.connect(self.clear_task)
 		self.deleteTaskButton.clicked.connect(self.delete_task)
 		self.executeTaskButton.clicked.connect(self.execute_task)
+		self.execute2AllButton.clicked.connect(self.execute_to_all)
 
 
 	def setup_openmic_controller(self):
@@ -207,6 +208,25 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.resultsComboBox.addItem("%s-%s"%(task.task_name,task.timestamp), ids[0])
 
 		
+	def execute_to_all(self):
+
+		task_index = self.tasksComboBox.currentIndex()
+
+		if task_index == -1 :
+			self.information_message("Δεν μπορεί να εκτελεστεί η εργασία με τις συγκεκριμένες επιλογές.")
+			return
+
+		task = self.data_model.submit_task(task_index)
+
+		agents_ids = list(self.data_model.agents.keys())
+
+		ids = self.instance.submit_request_to_agents(task.agent_request, agents_ids)
+
+		for ti in ids:
+			self.data_model.map_task_to_results(task, ti)
+			self.resultsComboBox.addItem("%s-%s"%(task.task_name,task.timestamp), ti)	
+		
+	
 	def save_task(self):
 
 		name = self.taskNameEdit.text()
