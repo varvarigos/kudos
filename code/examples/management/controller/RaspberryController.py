@@ -9,13 +9,12 @@ import sys
 import json
 import logging
 
-import MainWindow
 import DataModel
+import MainWindow
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-
 
 import openmic.lib.events as events
 import openmic.lib.constants as constants
@@ -27,6 +26,10 @@ import openmic.controller.controller_instance as controller_instance
 
 class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
+	agent_response_signal = pyqtSignal(events.EventAgentResponse)
+	agent_heartbeat_signal = pyqtSignal(events.EventAgentHeartBeat)
+	agents_disconnected_signal = pyqtSignal(events.EventAgentsDisconnected)
+
 	def __init__(self):
 	
 		super(RaspberryController, self).__init__()
@@ -36,6 +39,7 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.setupUi(self)
 
 		self.setup_actions()
+
 		self.setup_openmic_controller()
 
 		self.data_model = DataModel.DataModel(self.agentsComboBox, self.tasksComboBox, self.showTaskAgentsComboBox)
@@ -49,7 +53,6 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
 		# UI actions
 		self.actionAbout.triggered.connect(self.credentials)
-
 
 		self.agentsButton.clicked.connect(self.agents_page)
 		self.createTaskButton.clicked.connect(self.create_task_page)
@@ -72,11 +75,11 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
 	def setup_openmic_controller(self):
 
-		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
-		context = controller_context.ControllerContext(zeromq_params)
+		#zeromq_params = cons.ZeroMQParameters("127.0.0.1")
+		#context = controller_context.ControllerContext(zeromq_params)
 
-		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
-		#context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		rabbitmq_params = cons.RabbitMQParameters("bee-01.rmq.cloudamqp.com","mtsapzpt", "udyNqp3nCE9LyFYl7-AXt4Hfg747Qctq", virtual_host = "mtsapzpt")
+		context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 
 		self.instance = controller_instance.ControllerInstance(context)
 		
@@ -85,8 +88,11 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		context.connect([events.EventAgentHeartBeat], self.agent_heartbeat)
 		context.connect([events.EventAgentResponse], self.agent_response)
 
-
-
+		self.agent_response_signal.connect(self.handle_response_signal)
+		self.agent_heartbeat_signal.connect(self.handle_heartbeat_signal)
+		self.agents_disconnected_signal.connect(self.handle_disconnected_signal)
+	
+ 
 	def credentials(self):
 
 		message = '<b>Ανδρέας Βαρβαρίγος & Αναστάσης Βαρβαρίγος 2019</b><br><br>'
@@ -109,23 +115,31 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.tabWidget.setCurrentIndex(0)
 		self.taskParameterEdit.setEnabled(False)
 
+		self.data_model.create_task(0, "Χαρακτηριστικά", "0")
+		self.data_model.create_task(1, "Πακέτα λογισμικού", "1")
+		self.data_model.create_task(2, "Πλήρης καταγραφή", "2")
+
 
 
 	def agents_page(self):
+		
 		self.stackedWidget.setCurrentIndex(0)
 		self.tabWidget.setCurrentIndex(0)
 		self.show_agent_details(self.agentsComboBox.currentIndex())
 
 
 	def create_task_page(self):
+		
 		self.stackedWidget.setCurrentIndex(1)
 
 
 	def tasks_page(self):
+		
 		self.stackedWidget.setCurrentIndex(2)
 
 
 	def results_page(self):
+		
 		self.stackedWidget.setCurrentIndex(3)
 
 
@@ -207,7 +221,7 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
 		self.resultsComboBox.addItem("%s-%s"%(task.task_name,task.timestamp), ids[0])
 
-		
+	
 	def execute_to_all(self):
 
 		task_index = self.tasksComboBox.currentIndex()
@@ -224,9 +238,9 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
 		for ti in ids:
 			self.data_model.map_task_to_results(task, ti)
-			self.resultsComboBox.addItem("%s-%s"%(task.task_name,task.timestamp), ti)	
-		
-	
+			self.resultsComboBox.addItem("%s-%s"%(task.task_name,task.timestamp), ti)
+
+
 	def save_task(self):
 
 		name = self.taskNameEdit.text()
@@ -254,27 +268,16 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.taskParameterEdit.clear()
 		self.taskCategoryComboBox.setCurrentIndex(0)
 
-
-	def agent_connect(self, evt):
-		
-		self.data_model.handle_agent_data(evt)
-	
-		if self.data_model.get_agent(evt.agent_id).newly_discovered :
-			self.instance.submit_request_to_agents(json.dumps({ "cmd": "inventory", "params": "0" }), [evt.agent_id])
-	
-
-	def agent_disconnect(self, evt):
-	
+	def handle_disconnected_signal(self, evt):
+		print(evt)
 		self.data_model.handle_agent_disconnection(evt)
-	
 
-	def agent_heartbeat(self, evt):
-	
+	def handle_heartbeat_signal(self, evt):
+		print(evt)
 		self.data_model.handle_agent_data(evt)
-	
 
-	def agent_response(self, evt):
-	
+	def handle_response_signal(self, evt):
+
 		update_agent_response = self.data_model.handle_agent_response(evt)
 
 		if update_agent_response :
@@ -282,8 +285,28 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 
 		if evt.request_id in list(self.data_model.task_results.keys()):
 			self.show_results(0)
-	
+		
 
+	def agent_connect(self, evt):
+		
+		self.data_model.handle_agent_data(evt)
+	
+		if self.data_model.get_agent(evt.agent_id).newly_discovered :
+			self.instance.submit_request_to_agents(json.dumps({ "cmd": "inventory", "params": "2" }), [evt.agent_id])
+	
+	def agent_disconnect(self, evt):
+	
+		self.agents_disconnected_signal.emit(evt)
+	
+	def agent_heartbeat(self, evt):
+	
+		self.agent_heartbeat_signal.emit(evt)
+	
+	def agent_response(self, evt):
+	
+		self.agent_response_signal.emit(evt)
+
+	
 	def critical_message(self, msg):
 		
 		dlg = QMessageBox(self)

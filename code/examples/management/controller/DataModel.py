@@ -80,7 +80,6 @@ class TaskResults:
 		self.agent_request = task.format_agent_request()
 		self.results = None
 
-
 class DataModel:
 
 	def __init__(self, agentsComboBox, tasksComboBox, showTaskAgentsComboBox):
@@ -92,7 +91,7 @@ class DataModel:
 		self.agentsComboBox = agentsComboBox
 		self.tasksComboBox = tasksComboBox
 		self.showTaskAgentsComboBox = showTaskAgentsComboBox
-		
+
 
 	def handle_agent_data(self, message):
 
