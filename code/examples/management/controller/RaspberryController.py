@@ -269,11 +269,18 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		self.taskCategoryComboBox.setCurrentIndex(0)
 
 	def handle_disconnected_signal(self, evt):
-		print(evt)
+		
+		names = []
+		
 		self.data_model.handle_agent_disconnection(evt)
-
+		
+		for agent_id in evt.agents_ids:
+			names.append(self.data_model.get_agent(agent_id).name)
+		
+		self.critical_message("Απώλεια επικοινωνίας με τις συσκευές: %s"%(" , ".join(names)))
+		
 	def handle_heartbeat_signal(self, evt):
-		print(evt)
+		
 		self.data_model.handle_agent_data(evt)
 
 	def handle_response_signal(self, evt):
@@ -295,7 +302,7 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 			self.instance.submit_request_to_agents(json.dumps({ "cmd": "inventory", "params": "2" }), [evt.agent_id])
 	
 	def agent_disconnect(self, evt):
-	
+
 		self.agents_disconnected_signal.emit(evt)
 	
 	def agent_heartbeat(self, evt):
