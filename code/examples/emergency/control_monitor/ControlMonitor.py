@@ -27,20 +27,28 @@ COLORS = [Qt.white, Qt.black, Qt.lightGray, Qt.green, Qt.yellow]
 
 class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 
+	refresh_signal = pyqtSignal()
+	agent_disconnects_signal = pyqtSignal(events.EventAgentsDisconnected)
+
 	def __init__(self):
 	
 		super(ControlMonitor, self).__init__()
 
-		self.stations = { }
 		self.instance = None
+		self.stations_status = []
+		self.stations_agent_id = {}
 
 		self.setupUi(self)
 
 		with open("map.json") as f:
-			self.map_data = json.load(f)["map"]
+			data = json.load(f)
+			self.map_data = data["map"]
 			self.rows = len(self.map_data)
 			self.columns = len(self.map_data[0])
 
+			for i in range(data["stations"]):
+				self.stations_status.append(0) 
+ 
 		self.setup_actions()
 		self.setup_openmic_controller()
 
@@ -48,21 +56,20 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 		self.show()
 
 
-
 	def setup_openmic_controller(self):
 
-		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
-		context = controller_context.ControllerContext(zeromq_params)
-		
-		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
-		#context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		rabbitmq_params = cons.RabbitMQParameters("bee-01.rmq.cloudamqp.com","mtsapzpt", "udyNqp3nCE9LyFYl7-AXt4Hfg747Qctq", virtual_host = "mtsapzpt")
+		context = controller_context.ControllerContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 
 		self.instance = controller_instance.ControllerInstance(context)
 		
 		context.connect([events.EventAgentConnected], self.agent_connect)
 		context.connect([events.EventAgentsDisconnected], self.agent_disconnect)
 		context.connect([events.EventAgentHeartBeat], self.agent_heartbeat)
- 
+		context.connect([events.EventAgentGeneralMessage], self.agent_message)
+
+		self.refresh_signal.connect(self.refresh_map)
+		self.agent_disconnects_signal.connect(self.disconnect_alert)
 
 	def setup_actions(self):
 
@@ -84,6 +91,8 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 
 	def refresh_map(self):
 
+		stations = 0
+
 		for row in range(self.rows):
 			for column in range(self.columns):				
 	
@@ -92,9 +101,18 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 				palette = lbl.palette()
 				
 				if self.map_data[row][column] == 2 :
+			
 					lbl.setPixmap(QPixmap(":/images/motion-sensor.png"))
+					
+					if self.stations_status[stations] == 1 :
+						palette.setColor(lbl.backgroundRole(), Qt.lightGray)
+					else:
+						palette.setColor(lbl.backgroundRole(), Qt.red)
 
-				palette.setColor(lbl.backgroundRole(), COLORS[int(self.map_data[row][column])])
+					stations += 1
+			
+				else:
+					palette.setColor(lbl.backgroundRole(), COLORS[int(self.map_data[row][column])])
 
 				lbl.setPalette(palette)
 
@@ -116,25 +134,34 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 		dlg.show()
 
 
+	def disconnect_alert(self, evt):	
+		self.critical_message("Απώλεια επικοινωνίας με τους ακόλουθους σταθμούς παρατήρησης: %s"%(" , ".join(evt.agents_ids)))
+
+
 	def agent_connect(self, evt):
 
-		if evt.agent_id not in self.stations :
-			self.stations[evt.agent_id] = { "status": 1, "alarm":0 }
+		if evt.agent_id not in self.stations_agent_id :
+			self.stations_agent_id[evt.agent_id] = { "station_index": -1 }
 		else:
-			self.stations[evt.agent_id]["status"] = 1
+			station_index = self.stations_agent_id[evt.agent_id]["station_index"]
+			self.stations_status[station_index] = 1
 
-		self.refresh_map()
+		self.refresh_signal.emit()
 
 
 	def agent_disconnect(self, evt):
 
 		for agent_id in evt.agents_ids:
-			self.stations[agent_id]["status"] = 0 
+			self.stations_status[self.stations_agent_id[agent_id]["station_index"]] = 0
 
-		self.refresh_map()
+		self.agent_disconnects_signal.emit(evt)
 
-		self.critical_message("Απώλεια επικοινωνίας με τους ακόλουθους σταθμούς παρατήρησης: %s"%(" , ".join(evt.agents_ids)))
 
+	def agent_message(self, evt):
+
+		self.stations_agent_id[evt.agent_id]["station_index"] = evt.message["station_index"]
+		self.stations_status[evt.message["station_index"]] = 1
+		self.refresh_signal.emit()
 
 	def agent_heartbeat(self, evt):
 		print(str(evt))
