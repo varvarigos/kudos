@@ -109,6 +109,10 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 					else:
 						palette.setColor(lbl.backgroundRole(), Qt.red)
 
+					if self.stations_status[stations] == -1:
+						self.critical_message("Συναγερμός - Εντοπίστηκε πρόβλημα απο σταθμό παρατήρησης: Σ%s"%(stations+1))
+
+
 					stations += 1
 			
 				else:
@@ -160,8 +164,10 @@ class ControlMonitor(QMainWindow, MainWindow.Ui_MainWindow):
 	def agent_message(self, evt):
 
 		self.stations_agent_id[evt.agent_id]["station_index"] = evt.message["station_index"]
-		self.stations_status[evt.message["station_index"]] = 1
+		self.stations_status[evt.message["station_index"]] = evt.message["status"]
+
 		self.refresh_signal.emit()
+
 
 	def agent_heartbeat(self, evt):
 		print(str(evt))
