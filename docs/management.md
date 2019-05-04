@@ -97,4 +97,6 @@
 <img src="images/result1.png" height="80%" width="80%">
 <img src="images/result2.png" height="80%" width="80%">
 
-Μια ολοκληρωμένη επίδειξη της συνολικής λειτουργίας του συστήματος υπάρχει στο παρακάτω video:  VIDEO LINK
+Μια ολοκληρωμένη επίδειξη της συνολικής λειτουργίας του συστήματος υπάρχει στο παρακάτω video:
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/HuHVh8NuREE/0.jpg)](http://www.youtube.com/watch?v=HuHVh8NuREE "Σύστημα διαχείρισης Raspberry Pi")
