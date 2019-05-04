@@ -49,12 +49,14 @@ class MonitoringStation(QObject):
 		self.sound_thread = StationSounds.StationSounds()
 		self.sound_thread_signal.connect(self.sound_thread.on_play_sound)
 		self.sound_thread.start()
-		
-		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
+
+		"""
+		zeromq_params = cons.ZeroMQParameters("192.168.68")
 		self.context = agent_context.AgentContext(zeromq_params)
-		
-		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
-		#self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		"""
+
+		rabbitmq_params = cons.RabbitMQParameters("bee-01.rmq.cloudamqp.com","mtsapzpt", "udyNqp3nCE9LyFYl7-AXt4Hfg747Qctq", virtual_host = "mtsapzpt")
+		self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 
 		## initialize GPIO
 		
@@ -74,6 +76,8 @@ class MonitoringStation(QObject):
 
 		self.context.connect([events.EventControllerRequest], self.handle_controller_request)
 		self.context.connect([events.EventAgentCollaboration], self.collaboration)
+
+		self.agent_instance.agent_general_message({"station_index": self.station_index, "status": 1})
 
 
 		while True:
@@ -95,6 +99,7 @@ class MonitoringStation(QObject):
 				self.lookup_table[self.station_index][self.station_index] = 0
 
 				self.agent_instance.agent_to_agents_request([], { "alarm": self.station_index })
+				self.agent_instance.agent_general_message({"station_index": self.station_index, "status": -1})
 				self.sound_thread_signal.emit(self.get_evacuation_message())
 
 
