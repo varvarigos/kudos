@@ -58,6 +58,7 @@
 
 #### B. OpenMIC Controller
 
+![openmic_controller](images/openmic_controller.png)
  
 ## Εγκατάσταση
 
