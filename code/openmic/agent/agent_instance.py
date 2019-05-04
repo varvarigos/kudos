@@ -73,13 +73,13 @@ class AgentInstance:
 		self.agent_context.add_message_to_internal_fwd_queue(a2a_request)
 
 
-	def agent_general_message(self, message):
+	def agent_general_message(self, msg):
 		
 		message = { "agent_id": self.agent_context.agent_id, "response_type": "message" }
 
 		if isinstance(message, dict):
-			message_response["response_content"] = message
+			message["response_content"] = msg
 		else:
-			message_response["response_content"] = json.loads(message)
+			message["response_content"] = json.loads(msg)
 
-		self.agent_context.add_message_to_internal_fwd_queue(message_response)
+		self.agent_context.add_message_to_internal_fwd_queue(message)
