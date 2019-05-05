@@ -12,7 +12,16 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+"""
+  Έχουμε υλοποιήσει μια σειρά απο βοηθητικές κλάσεις ώστε να μπορεί η εφαρμογή διαχείρισης πολλαπλών Raspberry Pi
+  να διαχειρίζεται τις διαθέσιμες συσκευές, τις εργασίες του χρήστη και τα αποτελέσματα.
+"""
 
+"""
+  Η κλάση Raspberry διατηρεί όλες τις απαραίτητες πληφορορίες που χρειάζεται η γραφική διεπαφή σχετικά με τις
+  συσκευές που περιέχουν την ειδική εφαρμογή και άρα μπορούμε να διαχειριστούμε απο μέσω του συστήματος που
+  έχουμε αναπτύξει.
+"""
 class Raspberry:
 
 	def __init__(self, message):
@@ -45,8 +54,12 @@ class Raspberry:
 		self.status_icon = QIcon(":/images/unplugged.png")
 		self.online_status = False
 
+	
 
-
+"""
+  Η κλάση Τask διατηρεί όλες τις απαραίτητες πληφορορίες που χρειάζεται η γραφική διεπαφή σχετικά με τις
+  διαθέσιμες προς εκτέλεση εργασίες.
+"""
 class Task:
 
 	def __init__(self, category, name, parameters):
@@ -71,6 +84,11 @@ class Task:
 		return json.dumps({"cmd": cmd, "params": self.parameters})
 
 
+	
+"""
+  Η κλάση TaskResults διατηρεί όλες τις απαραίτητες πληφορορίες που χρειάζεται η γραφική διεπαφή σχετικά με τις
+  το αποτέλεσμα της εκτέλεσης κάποιες εργασίες και κάποια ειδική εφαρμογή.
+"""
 class TaskResults:
 
 	def __init__(self, task):
@@ -80,6 +98,12 @@ class TaskResults:
 		self.agent_request = task.format_agent_request()
 		self.results = None
 
+
+"""
+  Η κλάση DataModel παρέχει το μηχανισμό στην εφαρμογή  ώστε να μπορεί να διαχειρίζεται τις διαθέσιμες συσκευές, τις εργασίες
+  που ορίζουν οι χρήστες και τα αποτελέσματα της εκτέλεσης τους. Επιπλέον, παρέχει μεθόδους που ανανεώνουν τις πληροφορίες
+  στην γραφική διεπαφή.
+"""	
 class DataModel:
 
 	def __init__(self, agentsComboBox, tasksComboBox, showTaskAgentsComboBox):
@@ -91,8 +115,12 @@ class DataModel:
 		self.agentsComboBox = agentsComboBox
 		self.tasksComboBox = tasksComboBox
 		self.showTaskAgentsComboBox = showTaskAgentsComboBox
-
-
+	
+	"""
+	 Χειρίζεται τα μηνήματα που λαμβάνει απο την βιβλιοθήκη OpenMIC σχετικά με την κατάσταση μιας ειδική εφαρμογής. 
+	 
+	 Ανανεώνει κατάλληλα τις βοηθητικές μεταβλητές και την γραφική διεπαφή.
+	"""
 	def handle_agent_data(self, message):
 
 		if message.agent_id not in self.agents.keys() :
@@ -110,7 +138,12 @@ class DataModel:
 			self.showTaskAgentsComboBox.setItemIcon(index, agent.status_icon)
 
 
-
+	"""
+	 Χειρίζεται τα μηνήματα που λαμβάνει απο την βιβλιοθήκη OpenMIC για την περίπτωση που έχει χαθεί
+	 η επικοινωνία με κάποια ειδική εφαρμογή. 
+	 
+	 Ανανεώνει κατάλληλα τις βοηθητικές μεταβλητές και την γραφική διεπαφή.
+	"""
 	def handle_agent_disconnection(self, message):
 		
 		for agent_id in message.agents_ids:
@@ -121,7 +154,6 @@ class DataModel:
 			index = list(self.agents.keys()).index(agent_id)
 			self.agentsComboBox.setItemIcon(index, agent.status_icon)
 			self.showTaskAgentsComboBox.setItemIcon(index, agent.status_icon)
-
 
 
 	def handle_agent_response(self, message):
@@ -152,6 +184,9 @@ class DataModel:
 			return False
 
 
+	"""
+	  Δημιουργεί μια νέα εργασία και ανανεώνει κατάλληλα την γραφική διεπαφή
+	"""
 	def create_task(self, category, name, parameters):
 		
 		task = Task(category, name, parameters)
@@ -159,7 +194,10 @@ class DataModel:
 		self.tasksComboBox.addItem(name)
 		self.tasksComboBox.setCurrentIndex(0)
 
-
+	
+	"""
+	  Διαγράφει κάποια συγκεκριμένη εργασία και ανανεώνει κατάλληλα την γραφική διεπαφή
+	"""
 	def delete_task(self, index):
 		
 		self.tasks.pop(index)
@@ -172,32 +210,46 @@ class DataModel:
 			self.tasksComboBox.setCurrentIndex(0)
 		
 
+	"""
+	   Δημιουργεί ένα νέο αντικείμενο που περιγράφει τα αποτελέσματα της εκτέλεσης κάποιας εργασίας
+	"""
 	def submit_task(self, task_index):
 		
 		return TaskResults(self.tasks[task_index])
 
-
+	"""
+	   Βοηθητική μέθοδος που συσχετίζει κάποια εργασία με τα αποτελέσματα εκτελεσής της
+	"""
 	def map_task_to_results(self, task, request_id):
 
 		self.task_results[request_id] = task
 
-
-
+	"""
+	   Επιστρέφει τα αποτελέσματα της εκτέλεσης κάποιας συγκεκριμένης εργασίας
+	"""
 	def get_task_results(self, request_id):
 
 		return self.task_results[request_id].results 
 
-
+	"""
+	  Επιστρέφει τις πληροφορίες κατάστασης για κάποια συγκεκριμένη ειδική εφαρμογή
+	"""
 	def get_agent(self, agent_id):
 		
 		return self.agents[agent_id]
 
-
+	"""
+	  Επιστρέφει την περιγραφή κάποιας συγκεκριμένης εργασίας
+	"""
 	def get_task(self, index):
 
 		return self.tasks[index]
 
 
+	"""
+	  Μορφοποιεί τις πληροφορίες σχετικά με τα χαρακτηριστικά και την τρέχουσα κατάσταση μιας ειδικής εφαρμογής
+	  που παρουσιάζονται στην καρτέλα "Χαρακτηριστικά Συστήματος"
+	"""
 	def get_agent_hardware(self, agent_id):
 		
 		html = ""
@@ -219,7 +271,10 @@ class DataModel:
 				
 		return html
 		
-
+	"""
+	  Μορφοποιεί τις πληροφορίες για τα διαθέσιμα πακέτα λογισμικού μιας ειδικής εφαρμογής 
+	  που παρουσιάζονται στην καρτέλα "Πακέτα Λογισμικού"
+	"""
 	def get_agent_software(self, agent_id):
 
 		software = self.agents[agent_id].software_inventory
