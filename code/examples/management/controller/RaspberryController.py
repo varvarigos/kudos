@@ -120,8 +120,7 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		context.connect([events.EventAgentHeartBeat], self.agent_heartbeat)
 		context.connect([events.EventAgentResponse], self.agent_response)
 		
-		# Συσχετίζουμε τα 3 βοηθητικά signals που ορίσαμε στην αρχή της κλάσεις με τις
-		# μεθόδους που τα χειρίζονται
+		# Συσχετίζουμε τα 3 βοηθητικά signals που ορίσαμε στην αρχή της κλάσης με τις μεθόδους που τα χειρίζονται
 		self.agent_response_signal.connect(self.handle_response_signal)
 		self.agent_heartbeat_signal.connect(self.handle_heartbeat_signal)
 		self.agents_disconnected_signal.connect(self.handle_disconnected_signal)
