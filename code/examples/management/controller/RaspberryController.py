@@ -112,9 +112,9 @@ class RaspberryController(QMainWindow, MainWindow.Ui_MainWindow):
 		# βιβλιοθήκης OpenMIC στην εφαρμογή μας
 		self.instance = controller_instance.ControllerInstance(context)
 		
-		# Μας ενδιαφέρει να παρακολουθούμε τγια μηνύματα με εντολές απο την εφαρμογή ελέγχου και διαχείρισης,
-		# έτσι κάναμε εγγραφή μονο για αυτό το event και ορίσαμε οτι τα σχετικά events θέλουμε
-		# να τα χειρίζεται η μέθοδος handle_controller_request
+		# Μας ενδιαφέρει να παρακολουθούμε 4 απο τα μηνύματα που σχετίζονται με την επικοινωνία μεταξύ της 
+		# εφαρμογής ελέγχου και διαχείρισης και των ειδικών εφαρμογών, έτσι κάνουμε εγγραφή στα αντίστοιχα events 
+		# ορίζουμε τις μεθόδους που θέλουμε να τα χειρίζονται
 		context.connect([events.EventAgentConnected], self.agent_connect)
 		context.connect([events.EventAgentsDisconnected], self.agent_disconnect)
 		context.connect([events.EventAgentHeartBeat], self.agent_heartbeat)
