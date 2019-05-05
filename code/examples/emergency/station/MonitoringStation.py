@@ -50,13 +50,11 @@ class MonitoringStation(QObject):
 		self.sound_thread_signal.connect(self.sound_thread.on_play_sound)
 		self.sound_thread.start()
 
-		"""
-		zeromq_params = cons.ZeroMQParameters("192.168.68")
+		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
 		self.context = agent_context.AgentContext(zeromq_params)
-		"""
-
-		rabbitmq_params = cons.RabbitMQParameters("bee-01.rmq.cloudamqp.com","mtsapzpt", "udyNqp3nCE9LyFYl7-AXt4Hfg747Qctq", virtual_host = "mtsapzpt")
-		self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
+		
+		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "/")
+		#self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 
 		## initialize GPIO
 		
