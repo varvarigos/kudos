@@ -92,3 +92,37 @@
 Αναλυτικές οδηγίες για την εγκατάσταση της βιβλιοθήκης σε κάποια υπολογιστική συσκευή υπάρχουν στο [σύνδεσμο](../code/README.md)
  
 ## Δημιουργία εφαρμογών και ρύθμιση διεπαφής επικοινωνίας 
+
+
+#### Β. Εφαρμογή ελέγχου και διαχείρισης
+
+Αρχικά, θα πρέπει να κάνουμε import τα απαραίτητα πακέτα:
+```
+import openmic.lib.events as events
+import openmic.lib.constants as constants
+import openmic.lib.exceptions as exceptions
+import openmic.utils.connection_parameters as cons
+import openmic.controller.controller_context as controller_context
+import openmic.controller.controller_instance as controller_instance
+```
+
+Στη συνέχεια δημιουργούμε το ίδιο ακριβώς αντικείμενο για την διεπαφή επικοινωνίας όπως στην περίπτωση της ειδικής εφαρμογής (Στο κώδικα που ακολουθεί θεωρούμε πως η μεταβλητή <i>connection_params</i> περιέχει το σχετικό αντικείμενο).
+
+Πλέον, μπορούμε να δημιουργήσουμε ένα αντικείμενο της βοηθητικής κλάσης <i>ControllerContext</i> και τέλος το αντικείμενο της κλάσης <i>ControllerInstance</i> μέσω του οποίου έχουμε πρόσβαση σε όλες τις λειτουργίες της βιβλιοθήκης για τις εφαρμογές ελέγχου και διαχείρισης.
+
+```
+context = controller_context.ControllerContext(connection_params) 
+instance = controller_instance.ControllerInstance(context)
+```
+
+Η εγγραφή για παρακολούθηση των γεγονότων (events) για τις εφαρμογές ελέγχου και διαχείρισης γίνεται πάλι μέσω της μεθόδου <i>connect()</i> της κλάσης <i>ControllerContext</i> ακολουθώντας την ίδια λογική όπως και στην περίπτωση των ειδικών εφαρμογών μονό που τώρα χρησιμοποιούμε τα events που σχετίζονται με τις εφαρμογές ελέγχου.
+
+```
+context.connect([events.EventAgentConnected], handle_agent_connect)
+context.connect([events.EventAgentsDisconnected], handle_agent_disconnect)
+context.connect([events.EventAgentHeartBeat], handle_agent_heartbeat)
+context.connect([events.EventAgentResponse], handle_agent_response)
+context.connect([events.EventAgentGeneralMessage], handle_agent_general_message)
+```
+
+Τέλος, αναλυτικά παραδείγματα για την αξιοποίηση όλων των χαρακτηριστικών της βιβλιοθήκης αποτελούν οι δύο εφαρμογές που έχουμε υλοποίηση και βρίσκονται στο <b><i>/code/examples</i></b>.
