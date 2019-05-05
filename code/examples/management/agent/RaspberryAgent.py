@@ -22,22 +22,22 @@ class RaspberryAgent:
 
 
 	def __init__(self) :
-		
-		# Μεταβλητή που 
+ 
 		self.panding_requests = {}
-		
-		"""
-		  Οι επόμενες δυο γραμμές ορίζουνε ++++
-		  +++
-		"""
+
+		# Καθορίζουμε την παράμετρο για την διεπαφή επικοινωνίας με βάση το ZeroMQ
+		# Σημείωση: Αν η εφαρμογή ελέγχου και διαχείρισης δεν είναι στο ίδιο μηχάνημα με την ειδική
+		#           εφαρμογή θα πρέπει να αντικατασταθεί κατάλληλα η δικτυακή διεύθυνση 
 		zeromq_params = cons.ZeroMQParameters("127.0.0.1")
+		
+		# Δημιουργία αντικειμένου της βοηθητικής κλάσης AgentContext με βάση τις παραμέτρους για την διεπαφή επικοινωνίας
 		self.context = agent_context.AgentContext(zeromq_params)
 		
 		"""
-		   Οι επόμενες
-		   Αν 
+		   Αν θέλουμε να χρησιμοποιήσουμε την διεπαφή επικοινωνίας με βάση το RabbitMQ θα πρέπει να σχολιαστούν οι
+		   δυο παραπάνω γραμμές και να βγούν απο τα σχόλια οι επόμενες δύο, αφού πρώτα ορίσουμε τις κατάλληλες
+		   παραμέτρους στην RabbitMQParameters 
 		"""
-		
 		#rabbitmq_params = cons.RabbitMQParameters("","", "", virtual_host = "")
 		#self.context = agent_context.AgentContext(rabbitmq_params, constants.DRIVER_RABBITMQ)
 		
