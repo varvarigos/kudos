@@ -20,7 +20,7 @@
 ### Ομάδα
 * Βαρβαρίγος Ανδρέας    (andreas.varvarigos@yahoo.com) 
 * Βαρβαρίγος Αναστάσης  (anastasis.varvarigos@gmail.com)
-
+* Προπονητής Δρ. Κρέτσης Αριστοτέλης
 
 ### Άδεια
 This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)
